@@ -1,0 +1,12 @@
+# LED
+LED0 = 10
+LED1 = 9
+LED2 = 25
+
+# Motor
+EN_A = 13
+EN_B = 20
+IN_LB = 19
+IN_LF = 16
+IN_RB = 21
+IN_RF = 26

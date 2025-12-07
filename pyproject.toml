@@ -1,0 +1,8 @@
+[project]
+name = "movement"
+version = "1.0.0"
+description = "Add your description here"
+requires-python = "==3.9.19"
+dependencies = [
+    "rpi-gpio>=0.7.1",
+]
