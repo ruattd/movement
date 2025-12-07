@@ -27,7 +27,20 @@ def motor_backward():
     output(IN_LB, HIGH)
     output(IN_RB, HIGH)
 
+def motor_turnleft():
+    output(IN_LF, HIGH)
+    output(IN_RF, LOW)
+    output(IN_LB, LOW)
+    output(IN_RB, HIGH)
+
+def motor_turnright():
+    output(IN_LF, LOW)
+    output(IN_RF, HIGH)
+    output(IN_LB, HIGH)
+    output(IN_RB, LOW)
+
 __all__ = [
     'motor_init',
-    'motor_stop', 'motor_forward', 'motor_backward'
+    'motor_stop', 'motor_forward', 'motor_backward',
+    'motor_turnleft', 'motor_turnright'
 ]
