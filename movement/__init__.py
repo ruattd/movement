@@ -8,4 +8,4 @@ R.setmode(R.BCM)
 R.setwarnings(False)
 
 from .pin_definition import *
-from .motor import *
+from . import motor
