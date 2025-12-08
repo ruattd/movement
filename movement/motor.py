@@ -2,34 +2,26 @@ from RPi.GPIO import *
 from .pin_definition import *
 
 is_initialized = False
-pwm_lf: PWM
-pwm_lb: PWM
-pwm_rf: PWM
-pwm_rb: PWM
+pwm_l: PWM
+pwm_r: PWM
 
 def init():
     # setup pins
-    setup(EN_A, OUT, initial=HIGH)
-    setup(EN_B, OUT, initial=HIGH)
+    setup(EN_L, OUT, initial=HIGH)
+    setup(EN_R, OUT, initial=HIGH)
     setup(IN_LB, OUT, initial=LOW)
     setup(IN_LF, OUT, initial=LOW)
     setup(IN_RB, OUT, initial=LOW)
     setup(IN_RF, OUT, initial=LOW)
     # setup PWM
     global is_initialized
-    global pwm_lf
-    global pwm_lb
-    global pwm_rf
-    global pwm_rb
-    pwm_freq = 2
-    pwm_lf = PWM(IN_LF, pwm_freq)
-    pwm_lf.start(100)
-    pwm_lb = PWM(IN_LB, pwm_freq)
-    pwm_lb.start(100)
-    pwm_rf = PWM(IN_RF, pwm_freq)
-    pwm_rf.start(100)
-    pwm_rb = PWM(IN_RB, pwm_freq)
-    pwm_rb.start(100)
+    global pwm_l
+    global pwm_r
+    pwm_freq = 50
+    pwm_l = PWM(EN_L, pwm_freq)
+    pwm_l.start(100)
+    pwm_r = PWM(EN_R, pwm_freq)
+    pwm_r.start(100)
     is_initialized = True
 
 def check_init():
@@ -48,10 +40,8 @@ def release():
     global is_initialized
     is_initialized = False
     stop()
-    pwm_lf.stop()
-    pwm_rf.stop()
-    pwm_lb.stop()
-    pwm_rb.stop()
+    pwm_l.stop()
+    pwm_r.stop()
 
 def forward():
     check_init()
@@ -81,13 +71,11 @@ def turn_right():
     output(IN_LB, HIGH)
     output(IN_RB, LOW)
 
-def speed_left(c: int):
-    pwm_lf.ChangeDutyCycle(c)
-    pwm_lb.ChangeDutyCycle(c)
+def speed_left(c: float):
+    pwm_l.ChangeDutyCycle(c)
 
-def speed_right(c: int):
-    pwm_rf.ChangeDutyCycle(c)
-    pwm_rb.ChangeDutyCycle(c)
+def speed_right(c: float):
+    pwm_r.ChangeDutyCycle(c)
 
 __all__ = [
     'init', 'stop', 'release',

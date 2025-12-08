@@ -4,8 +4,8 @@ LED1 = 9
 LED2 = 25
 
 # Motor
-EN_A = 13
-EN_B = 20
+EN_L = 13
+EN_R = 20
 IN_RF = 19
 IN_RB = 16
 IN_LF = 21
