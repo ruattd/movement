@@ -6,6 +6,9 @@ pwm_l: PWM
 pwm_r: PWM
 
 def init():
+    global is_initialized
+    global pwm_l
+    global pwm_r
     # setup pins
     setup(EN_L, OUT, initial=HIGH)
     setup(EN_R, OUT, initial=HIGH)
@@ -14,9 +17,6 @@ def init():
     setup(IN_RB, OUT, initial=LOW)
     setup(IN_RF, OUT, initial=LOW)
     # setup PWM
-    global is_initialized
-    global pwm_l
-    global pwm_r
     pwm_freq = 50
     pwm_l = PWM(EN_L, pwm_freq)
     pwm_l.start(100)
@@ -38,9 +38,9 @@ def stop():
     output(IN_RF, LOW)
 
 def release():
+    global is_initialized
     if not is_initialized:
         return
-    global is_initialized
     is_initialized = False
     stop()
     pwm_l.stop()
@@ -82,8 +82,27 @@ def speed_right(c: float):
     check_init()
     pwm_r.ChangeDutyCycle(c)
 
+def map(x: float, y: float):
+    """
+    Map x, y coordinates to motor movements.
+    x: -1 (left) to 1 (right)
+    y: -1 (forward) to 1 (backward)
+    """
+    if x == 0 and y == 0:
+        stop()
+        return
+    # set speeds
+    base_speed = 100 * max(abs(x), abs(y))
+    speed_left(base_speed * min(1, 1 - x))
+    speed_right(base_speed * min(1, 1 + x))
+    # start motor
+    if y < 0:  # forward
+        forward()
+    else:  # backward
+        backward()
+
 __all__ = [
-    'init', 'stop', 'release',
+    'init', 'stop', 'release', 'map',
     'forward', 'backward', 'turn_left', 'turn_right',
     'speed_left', 'speed_right',
 ]
