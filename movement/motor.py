@@ -28,7 +28,7 @@ def check_init():
     if not is_initialized:
         print("Initializing motor GPIO...")
         print("If you don't want to see this message, please invoke 'init()' before using other functions.")
-        init();
+        init()
 
 def stop():
     check_init()
@@ -75,11 +75,11 @@ def turn_right():
     output(IN_RB, LOW)
 
 def speed_left(c: float):
-    check_init();
+    check_init()
     pwm_l.ChangeDutyCycle(c)
 
 def speed_right(c: float):
-    check_init();
+    check_init()
     pwm_r.ChangeDutyCycle(c)
 
 __all__ = [
