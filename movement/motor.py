@@ -38,6 +38,8 @@ def stop():
     output(IN_RF, LOW)
 
 def release():
+    if not is_initialized:
+        return
     global is_initialized
     is_initialized = False
     stop()
@@ -73,9 +75,11 @@ def turn_right():
     output(IN_RB, LOW)
 
 def speed_left(c: float):
+    check_init();
     pwm_l.ChangeDutyCycle(c)
 
 def speed_right(c: float):
+    check_init();
     pwm_r.ChangeDutyCycle(c)
 
 __all__ = [
