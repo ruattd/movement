@@ -28,6 +28,7 @@ def check_init():
     if not is_initialized:
         print("Initializing motor GPIO...")
         print("If you don't want to see this message, please invoke 'init()' before using other functions.")
+        init();
 
 def stop():
     check_init()
