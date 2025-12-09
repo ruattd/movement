@@ -1,9 +1,176 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Request
 from movement import motor
+from . import secrets
+import struct
 
 router = APIRouter()
 
+control_secret: str | None = None
+
+def check_secret(secret: str | None):
+    if control_secret == None:
+        print(f"[Movement][Motor] Not initialized, rejected")
+        return {
+            "status": "not_initialized",
+            "message": "Please call '/init' and get control secret first."
+        }
+    elif secret == control_secret:
+        return None
+    else:
+        print(f"[Movement][Motor] Invalid secret: {secret}")
+        return {
+            "status": "invalid_secret",
+            "message": "Invalid control secret."
+        }
+
 @router.get("/init")
-def init_motor():
-    motor.init()
-    return {"status": "initialized"}
+def initialize():
+    """
+    Initialize the motor and get control secret.
+    """
+    global control_secret
+    if control_secret == None:
+        print("[Movement][Motor] Initializing...")
+        motor.init()
+        control_secret = secrets.generate_secret(32)
+        print(f"[Movement][Motor] Control secret: {control_secret}")
+        return {
+            "status": "initialized",
+            "secret": control_secret
+        }
+    else:
+        print("[Movement][Motor] Already initialized, rejected")
+        return {
+            "status": "already_initialized",
+            "message": "Motor control has already been initialized, please call '/dispose' first."
+        }
+
+@router.post("/dispose")
+def dispose(secret: str | None = None):
+    """
+    Dispose the motor control and invalidate the secret.
+    :param secret: Control secret
+    :type secret: str | None
+    """
+    global control_secret
+    check = check_secret(secret)
+    if check:
+        return check
+    motor.release()
+    control_secret = None
+    print("[Movement][Motor] Control disposed")
+    return {
+        "status": "successful",
+        "message": "Motor control disposed."
+    }
+
+@router.post("/forward")
+def forward(secret: str | None = None):
+    """
+    Request forward
+    :param secret: Control secret
+    :type secret: str | None
+    """
+    check = check_secret(secret)
+    if check:
+        return check
+    motor.forward()
+    print("[Movement][Motor] Forward")
+
+@router.post("/backward")
+def backward(secret: str | None = None):
+    """
+    Request backward
+    :param secret: Control secret
+    :type secret: str | None
+    """
+    check = check_secret(secret)
+    if check:
+        return check
+    motor.backward()
+    print("[Movement][Motor] Backward")
+
+@router.post("/turn-left")
+def turn_left(secret: str | None = None):
+    """
+    Request turn left
+    :param secret: Control secret
+    :type secret: str | None
+    """
+    check = check_secret(secret)
+    if check:
+        return check
+    motor.turn_left()
+    print("[Movement][Motor] Turn left")
+
+@router.post("/turn-right")
+def turn_right(secret: str | None = None):
+    """
+    Request turn right
+    :param secret: Control secret
+    :type secret: str | None
+    """
+    check = check_secret(secret)
+    if check:
+        return check
+    motor.turn_right()
+    print("[Movement][Motor] Turn right")
+
+@router.post("/stop")
+def stop(secret: str | None = None):
+    """
+    Request stop
+    :param secret: Control secret
+    :type secret: str | None
+    """
+    check = check_secret(secret)
+    if check:
+        return check
+    motor.stop()
+    print("[Movement][Motor] Stop")
+
+@router.websocket("/map")
+async def map_control(ws: WebSocket, req: Request, secret: str | None = None):
+    """
+    Connect to map control API by web socket.
+    :param secret: Control secret
+    :type secret: str
+    """
+    try:
+        print(f"[Movement][Motor] New client trying to connect: {req.headers.get("User-Agent")}")
+        await ws.accept()
+        check = check_secret(secret)
+        if check:
+            await ws.send_json(check)
+            await ws.close()
+            return
+        FORMAT_STR = "<dd"
+        EXPECTED_LEN = 16
+        while True:
+            data = await ws.receive_bytes()
+            if len(data) != EXPECTED_LEN:
+                errmsg = f"Invalid data length sent by client: expect {EXPECTED_LEN}, actual {len(data)}"
+                print(f"[Movement][Motor] {errmsg}")
+                await ws.send_json({
+                    "status": "invalid_data_length",
+                    "message": errmsg
+                })
+                await ws.close()
+                break
+            unpacked = struct.unpack(FORMAT_STR, data)
+            x = unpacked[0]
+            y = unpacked[1]
+            if x < -1 or x > 1 or y < -1 or y > 1:
+                errmsg = f"Invalid data range sent by client: expect -1 ~ 1, actual ({x}, {y})"
+                print(f"[Movement][Motor] {errmsg}")
+                await ws.send_json({
+                    "status": "invalid_data_range",
+                    "message": errmsg
+                })
+                await ws.close()
+                break
+            motor.map(x, y)
+        print("[Movement][Motor] Connection closed")
+    except WebSocketDisconnect:
+        print("[Movement][Motor] Client disconnected")
+        motor.map(0, 0)

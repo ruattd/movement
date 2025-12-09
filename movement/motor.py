@@ -40,10 +40,10 @@ def release():
     global is_initialized
     if not is_initialized:
         return
-    is_initialized = False
     stop()
     pwm_l.stop()
     pwm_r.stop()
+    is_initialized = False
 
 def forward():
     check_init()
