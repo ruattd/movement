@@ -1,4 +1,5 @@
-import RPi.GPIO as R
+from .gpio import *
+from . import motor
 
 is_initialized = False
 
@@ -7,12 +8,9 @@ def initialize():
     print("Welcome to Movement GPIO, initializing...")
     # setup GPIO
     # use BCM pin numbering
-    R.setmode(R.BCM)
-    R.setwarnings(False)
+    setmode(BCM)
+    setwarnings(False)
     is_initialized = True
 
 if not is_initialized:
     initialize()
-
-from .pin_definition import *
-from . import motor

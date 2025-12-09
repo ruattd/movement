@@ -1,5 +1,4 @@
-from RPi.GPIO import *
-from .pin_definition import *
+from .gpio import *
 
 is_initialized = False
 pwm_l: PWM
@@ -32,10 +31,10 @@ def check_init():
 
 def stop():
     check_init()
-    output(IN_LB, LOW)
-    output(IN_LF, LOW)
-    output(IN_RB, LOW)
-    output(IN_RF, LOW)
+    set(IN_LB, LOW)
+    set(IN_LF, LOW)
+    set(IN_RB, LOW)
+    set(IN_RF, LOW)
 
 def release():
     global is_initialized
@@ -48,31 +47,31 @@ def release():
 
 def forward():
     check_init()
-    output(IN_LF, HIGH)
-    output(IN_RF, HIGH)
-    output(IN_LB, LOW)
-    output(IN_RB, LOW)
+    set(IN_LF, HIGH)
+    set(IN_RF, HIGH)
+    set(IN_LB, LOW)
+    set(IN_RB, LOW)
 
 def backward():
     check_init()
-    output(IN_LF, LOW)
-    output(IN_RF, LOW)
-    output(IN_LB, HIGH)
-    output(IN_RB, HIGH)
+    set(IN_LF, LOW)
+    set(IN_RF, LOW)
+    set(IN_LB, HIGH)
+    set(IN_RB, HIGH)
 
 def turn_left():
     check_init()
-    output(IN_LF, HIGH)
-    output(IN_RF, LOW)
-    output(IN_LB, LOW)
-    output(IN_RB, HIGH)
+    set(IN_LF, HIGH)
+    set(IN_RF, LOW)
+    set(IN_LB, LOW)
+    set(IN_RB, HIGH)
 
 def turn_right():
     check_init()
-    output(IN_LF, LOW)
-    output(IN_RF, HIGH)
-    output(IN_LB, HIGH)
-    output(IN_RB, LOW)
+    set(IN_LF, LOW)
+    set(IN_RF, HIGH)
+    set(IN_LB, HIGH)
+    set(IN_RB, LOW)
 
 def speed_left(c: float):
     check_init()
