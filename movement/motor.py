@@ -95,7 +95,7 @@ def map(x: float, y: float):
     speed_left(base_speed * min(1, 1 - x))
     speed_right(base_speed * min(1, 1 + x))
     # start motor
-    if y < 0:  # forward
+    if y <= 0:  # forward
         forward()
     else:  # backward
         backward()
