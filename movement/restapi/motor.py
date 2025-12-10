@@ -7,22 +7,6 @@ router = APIRouter()
 
 control_secret: str | None = None
 
-def check_secret(secret: str | None):
-    if control_secret == None:
-        print(f"[Movement][Motor] Not initialized, rejected")
-        return {
-            "status": "not_initialized",
-            "message": "Please call '/init' and get control secret first."
-        }
-    elif secret == control_secret:
-        return None
-    else:
-        print(f"[Movement][Motor] Invalid secret: {secret}")
-        return {
-            "status": "invalid_secret",
-            "message": "Invalid control secret."
-        }
-
 @router.get("/init")
 def initialize():
     """
@@ -45,10 +29,27 @@ def initialize():
             "message": "Motor control has already been initialized, please call '/dispose' first."
         }
 
+def check_secret(secret: str | None):
+    if control_secret == None:
+        print(f"[Movement][Motor] Not initialized, rejected")
+        return {
+            "status": "not_initialized",
+            "message": "Please call '/init' and get control secret first."
+        }
+    elif secret == control_secret:
+        return None
+    else:
+        print(f"[Movement][Motor] Invalid secret: {secret}")
+        return {
+            "status": "invalid_secret",
+            "message": "Invalid control secret."
+        }
+
 @router.post("/dispose")
 def dispose(secret: str | None = None):
     """
     Dispose the motor control and invalidate the secret.
+    
     :param secret: Control secret
     :type secret: str | None
     """
@@ -67,7 +68,8 @@ def dispose(secret: str | None = None):
 @router.post("/forward")
 def forward(secret: str | None = None):
     """
-    Request forward
+    Request forward.
+    
     :param secret: Control secret
     :type secret: str | None
     """
@@ -80,7 +82,8 @@ def forward(secret: str | None = None):
 @router.post("/backward")
 def backward(secret: str | None = None):
     """
-    Request backward
+    Request backward.
+    
     :param secret: Control secret
     :type secret: str | None
     """
@@ -93,7 +96,8 @@ def backward(secret: str | None = None):
 @router.post("/turn-left")
 def turn_left(secret: str | None = None):
     """
-    Request turn left
+    Request turn left.
+    
     :param secret: Control secret
     :type secret: str | None
     """
@@ -106,7 +110,8 @@ def turn_left(secret: str | None = None):
 @router.post("/turn-right")
 def turn_right(secret: str | None = None):
     """
-    Request turn right
+    Request turn right.
+    
     :param secret: Control secret
     :type secret: str | None
     """
@@ -119,7 +124,8 @@ def turn_right(secret: str | None = None):
 @router.post("/stop")
 def stop(secret: str | None = None):
     """
-    Request stop
+    Request stop.
+    
     :param secret: Control secret
     :type secret: str | None
     """
@@ -129,10 +135,42 @@ def stop(secret: str | None = None):
     motor.stop()
     print("[Movement][Motor] Stop")
 
-@router.websocket("/map")
+def check_data_range(x: float, y: float):
+    if x < -1 or x > 1 or y < -1 or y > 1:
+        errmsg = f"Invalid data range sent by client: expect -1.0 ~ 1.0, actual ({x}, {y})"
+        print(f"[Movement][Motor] {errmsg}")
+        return {
+            "status": "invalid_data_range",
+            "message": errmsg
+        }
+    return None
+
+@router.post("/map")
+def map(secret: str | None = None, x: float = 0.0, y: float = 0.0):
+    """
+    Control motor by map API.
+    
+    :param secret: Control secret
+    :type secret: str | None
+    :param x: Map X, -1.0 (left) ~ 1.0 (right)
+    :type x: float
+    :param y: Map Y, -1.0 (forward) ~ 1.0 (backward)
+    :type y: float
+    """
+    check = check_secret(secret)
+    if check:
+        return check
+    check_range = check_data_range(x, y)
+    if check_range:
+        return check_range
+    motor.map(x, y)
+    print(f"[Movement][Motor] Set map: ({x}, {y})")
+
+@router.websocket("/map/ws")
 async def map_control(ws: WebSocket, req: Request, secret: str | None = None):
     """
-    Connect to map control API by web socket.
+    Connect to map control API through web socket.
+    
     :param secret: Control secret
     :type secret: str
     """
@@ -144,6 +182,7 @@ async def map_control(ws: WebSocket, req: Request, secret: str | None = None):
             await ws.send_json(check)
             await ws.close()
             return
+        print("[Movement][Motor] Map API connected")
         FORMAT_STR = "<dd"
         EXPECTED_LEN = 16
         while True:
@@ -160,13 +199,9 @@ async def map_control(ws: WebSocket, req: Request, secret: str | None = None):
             unpacked = struct.unpack(FORMAT_STR, data)
             x = unpacked[0]
             y = unpacked[1]
-            if x < -1 or x > 1 or y < -1 or y > 1:
-                errmsg = f"Invalid data range sent by client: expect -1 ~ 1, actual ({x}, {y})"
-                print(f"[Movement][Motor] {errmsg}")
-                await ws.send_json({
-                    "status": "invalid_data_range",
-                    "message": errmsg
-                })
+            check_range = check_data_range(x, y)
+            if check_range:
+                await ws.send_json(check_range)
                 await ws.close()
                 break
             motor.map(x, y)
