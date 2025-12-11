@@ -167,7 +167,7 @@ def map(secret: str | None = None, x: float = 0.0, y: float = 0.0):
     print(f"[Movement][Motor] Set map: ({x}, {y})")
 
 @router.websocket("/map/ws")
-async def map_control(ws: WebSocket, req: Request, secret: str | None = None):
+async def map_control(ws: WebSocket, secret: str | None = None):
     """
     Connect to map control API through web socket.
     
@@ -175,7 +175,7 @@ async def map_control(ws: WebSocket, req: Request, secret: str | None = None):
     :type secret: str
     """
     try:
-        print(f"[Movement][Motor] New client trying to connect: {req.headers.get("User-Agent")}")
+        print(f"[Movement][Motor] New client trying to connect: {ws.headers.get("User-Agent")}")
         await ws.accept()
         check = check_secret(secret)
         if check:
