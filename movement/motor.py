@@ -61,11 +61,11 @@ def turn_right():
 
 def speed_left(c: float):
     check_init()
-    pwm_l.ChangeDutyCycle(max(0.0, c % 101.0))
+    pwm_l.ChangeDutyCycle(map_duty_cycle(c))
 
 def speed_right(c: float):
     check_init()
-    pwm_r.ChangeDutyCycle(max(0.0, c % 101.0))
+    pwm_r.ChangeDutyCycle(map_duty_cycle(c))
 
 def map(x: float, y: float):
     """

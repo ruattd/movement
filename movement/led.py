@@ -59,7 +59,7 @@ def gamma(value: float, gamma: float = 2.2, max_val: float = 100.0) -> float:
 def brightness(num: int, c: float):
     check_init(True)
     # brightness remap based on 10^n
-    r = gamma(max(0.0, c % 101))
+    r = gamma(map_duty_cycle(c))
     pwm[num].ChangeDutyCycle(100.0 - r)
 
 def on(num: int):

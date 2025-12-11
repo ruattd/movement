@@ -33,3 +33,8 @@ IN_RF = 19
 IN_RB = 16
 IN_LF = 21
 IN_LB = 26
+
+### GENERAL MAPPINGS ###
+
+def map_duty_cycle(c: float):
+    return max(0.0, round((c - 0.001) % 100.0, 2))
