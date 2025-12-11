@@ -1,5 +1,5 @@
 from .gpio import *
-from . import motor
+from . import motor as Motor, led as LED
 
 is_initialized = False
 
@@ -14,3 +14,12 @@ def initialize():
 
 if not is_initialized:
     initialize()
+
+# for compatibility
+motor = Motor
+
+__all__ = [
+    "motor",
+    "Motor",
+    "LED"
+]

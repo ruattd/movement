@@ -9,12 +9,8 @@ def init():
     global pwm_l
     global pwm_r
     # setup pins
-    setup(EN_L, OUT, initial=HIGH)
-    setup(EN_R, OUT, initial=HIGH)
-    setup(IN_LB, OUT, initial=LOW)
-    setup(IN_LF, OUT, initial=LOW)
-    setup(IN_RB, OUT, initial=LOW)
-    setup(IN_RF, OUT, initial=LOW)
+    setup([EN_L, EN_R], OUT, initial=HIGH)
+    setup([IN_LF, IN_LB, IN_RF, IN_RB], OUT, initial=LOW)
     # setup PWM
     pwm_freq = 50
     pwm_l = PWM(EN_L, pwm_freq)
@@ -31,10 +27,7 @@ def check_init():
 
 def stop():
     check_init()
-    set(IN_LB, LOW)
-    set(IN_LF, LOW)
-    set(IN_RB, LOW)
-    set(IN_RF, LOW)
+    set([IN_LF, IN_LB, IN_RF, IN_RB], LOW)
 
 def release():
     global is_initialized
@@ -43,43 +36,36 @@ def release():
     stop()
     pwm_l.stop()
     pwm_r.stop()
+    cleanup([EN_L, EN_R, IN_LF, IN_LB, IN_RF, IN_RB])
     is_initialized = False
 
 def forward():
     check_init()
-    set(IN_LF, HIGH)
-    set(IN_RF, HIGH)
-    set(IN_LB, LOW)
-    set(IN_RB, LOW)
+    set([IN_LB, IN_RB], LOW)
+    set([IN_LF, IN_RF], HIGH)
 
 def backward():
     check_init()
-    set(IN_LF, LOW)
-    set(IN_RF, LOW)
-    set(IN_LB, HIGH)
-    set(IN_RB, HIGH)
+    set([IN_LF, IN_RF], LOW)
+    set([IN_LB, IN_RB], HIGH)
 
 def turn_left():
     check_init()
-    set(IN_LF, HIGH)
-    set(IN_RF, LOW)
-    set(IN_LB, LOW)
-    set(IN_RB, HIGH)
+    set([IN_RF, IN_LB], LOW)
+    set([IN_LF, IN_RB], HIGH)
 
 def turn_right():
     check_init()
-    set(IN_LF, LOW)
-    set(IN_RF, HIGH)
-    set(IN_LB, HIGH)
-    set(IN_RB, LOW)
+    set([IN_LF, IN_RB], LOW)
+    set([IN_RF, IN_LB], HIGH)
 
 def speed_left(c: float):
     check_init()
-    pwm_l.ChangeDutyCycle(c)
+    pwm_l.ChangeDutyCycle(max(0.0, c % 101.0))
 
 def speed_right(c: float):
     check_init()
-    pwm_r.ChangeDutyCycle(c)
+    pwm_r.ChangeDutyCycle(max(0.0, c % 101.0))
 
 def map(x: float, y: float):
     """

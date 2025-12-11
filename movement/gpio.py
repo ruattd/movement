@@ -8,6 +8,7 @@ except Exception:
 setmode = G.setmode
 setwarnings = G.setwarnings
 setup = G.setup
+cleanup = G.cleanup
 set = G.output
 get = G.input
 PWM = G.PWM
