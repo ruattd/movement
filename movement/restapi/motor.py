@@ -206,6 +206,6 @@ async def map_control(ws: WebSocket, secret: str | None = None):
                 break
             motor.map(x, y)
         print("[Movement][Motor] Connection closed")
-    except WebSocketDisconnect:
-        print("[Movement][Motor] Client disconnected")
-        motor.map(0, 0)
+    except WebSocketDisconnect as e:
+        print(f"[Movement][Motor] Client disconnected: {e.code}")
+    motor.map(0, 0)

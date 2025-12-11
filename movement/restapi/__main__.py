@@ -28,7 +28,9 @@ def main():
         "movement.restapi:app", 
         host=args.host, 
         port=args.port,
-        reload=args.reload
+        reload=args.reload,
+        ws_ping_interval=2,
+        ws_ping_timeout=4,
     )
 
 if __name__ == "__main__":
