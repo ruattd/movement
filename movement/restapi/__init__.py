@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 
-app = FastAPI(title="Movement GPIO")
+app = FastAPI(
+    title="Movement",
+    description="REST API for taking the control of your RS bot based on Raspberry Pi",
+)
 
 @app.get("/")
 def index():
