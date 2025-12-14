@@ -1,9 +1,9 @@
 ### GPIO IMPORTS ###
 
 try:
-    import RPi.GPIO as G
+    import RPi.GPIO as G # type: ignore
 except Exception:
-    import Mock.GPIO as G
+    import Mock.GPIO as G # type: ignore
 
 setmode = G.setmode
 setwarnings = G.setwarnings

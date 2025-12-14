@@ -1,13 +1,13 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Request
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from movement import motor
 from . import secrets
 import struct
 
-router = APIRouter()
+route = APIRouter()
 
 control_secret: str | None = None
 
-@router.get("/init")
+@route.get("/init")
 def initialize():
     """
     Initialize the motor and get control secret.
@@ -16,7 +16,7 @@ def initialize():
     if control_secret == None:
         print("[Movement][Motor] Initializing...")
         motor.init()
-        control_secret = secrets.generate_secret(32)
+        control_secret = secrets.generate_secret(16)
         print(f"[Movement][Motor] Control secret: {control_secret}")
         return {
             "status": "initialized",
@@ -45,7 +45,7 @@ def check_secret(secret: str | None):
             "message": "Invalid control secret."
         }
 
-@router.post("/dispose")
+@route.post("/dispose")
 def dispose(secret: str | None = None):
     """
     Dispose the motor control and invalidate the secret.
@@ -54,18 +54,17 @@ def dispose(secret: str | None = None):
     :type secret: str | None
     """
     global control_secret
-    check = check_secret(secret)
-    if check:
+    if check := check_secret(secret):
         return check
     motor.release()
     control_secret = None
     print("[Movement][Motor] Control disposed")
     return {
-        "status": "successful",
+        "status": "success",
         "message": "Motor control disposed."
     }
 
-@router.post("/forward")
+@route.post("/forward")
 def forward(secret: str | None = None):
     """
     Request forward.
@@ -73,13 +72,12 @@ def forward(secret: str | None = None):
     :param secret: Control secret
     :type secret: str | None
     """
-    check = check_secret(secret)
-    if check:
+    if check := check_secret(secret):
         return check
     motor.forward()
     print("[Movement][Motor] Forward")
 
-@router.post("/backward")
+@route.post("/backward")
 def backward(secret: str | None = None):
     """
     Request backward.
@@ -87,13 +85,12 @@ def backward(secret: str | None = None):
     :param secret: Control secret
     :type secret: str | None
     """
-    check = check_secret(secret)
-    if check:
+    if check := check_secret(secret):
         return check
     motor.backward()
     print("[Movement][Motor] Backward")
 
-@router.post("/turn-left")
+@route.post("/turn-left")
 def turn_left(secret: str | None = None):
     """
     Request turn left.
@@ -101,13 +98,12 @@ def turn_left(secret: str | None = None):
     :param secret: Control secret
     :type secret: str | None
     """
-    check = check_secret(secret)
-    if check:
+    if check := check_secret(secret):
         return check
     motor.turn_left()
     print("[Movement][Motor] Turn left")
 
-@router.post("/turn-right")
+@route.post("/turn-right")
 def turn_right(secret: str | None = None):
     """
     Request turn right.
@@ -115,13 +111,12 @@ def turn_right(secret: str | None = None):
     :param secret: Control secret
     :type secret: str | None
     """
-    check = check_secret(secret)
-    if check:
+    if check := check_secret(secret):
         return check
     motor.turn_right()
     print("[Movement][Motor] Turn right")
 
-@router.post("/stop")
+@route.post("/stop")
 def stop(secret: str | None = None):
     """
     Request stop.
@@ -129,8 +124,7 @@ def stop(secret: str | None = None):
     :param secret: Control secret
     :type secret: str | None
     """
-    check = check_secret(secret)
-    if check:
+    if check := check_secret(secret):
         return check
     motor.stop()
     print("[Movement][Motor] Stop")
@@ -145,7 +139,7 @@ def check_data_range(x: float, y: float):
         }
     return None
 
-@router.post("/map")
+@route.post("/map")
 def map(secret: str | None = None, x: float = 0.0, y: float = 0.0):
     """
     Control motor by map API.
@@ -157,16 +151,14 @@ def map(secret: str | None = None, x: float = 0.0, y: float = 0.0):
     :param y: Map Y, -1.0 (forward) ~ 1.0 (backward)
     :type y: float
     """
-    check = check_secret(secret)
-    if check:
+    if check := check_secret(secret):
         return check
-    check_range = check_data_range(x, y)
-    if check_range:
+    if check_range := check_data_range(x, y):
         return check_range
     motor.map(x, y)
     print(f"[Movement][Motor] Set map: ({x}, {y})")
 
-@router.websocket("/map/ws")
+@route.websocket("/map/ws")
 async def map_control(ws: WebSocket, secret: str | None = None):
     """
     Connect to map control API through web socket.
@@ -177,8 +169,7 @@ async def map_control(ws: WebSocket, secret: str | None = None):
     try:
         print(f"[Movement][Motor] New client trying to connect: {ws.headers.get("User-Agent")}")
         await ws.accept()
-        check = check_secret(secret)
-        if check:
+        if check := check_secret(secret):
             await ws.send_json(check)
             await ws.close()
             return
@@ -199,8 +190,7 @@ async def map_control(ws: WebSocket, secret: str | None = None):
             unpacked = struct.unpack(FORMAT_STR, data)
             x = unpacked[0]
             y = unpacked[1]
-            check_range = check_data_range(x, y)
-            if check_range:
+            if check_range := check_data_range(x, y):
                 await ws.send_json(check_range)
                 await ws.close()
                 break

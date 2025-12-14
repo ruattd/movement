@@ -12,6 +12,13 @@ def index():
     """
     return {"message": "Welcome to Movement GPIO REST API!"}
 
-# motor driving endpoints
-from .motor import router as motor_router
-app.include_router(motor_router, prefix="/motor")
+from . import motor, camera
+
+# motor control endpoints
+app.include_router(motor.route, prefix="/motor")
+
+# video capture endpoints
+app.include_router(camera.route, prefix="/cam")
+
+def release():
+    camera.release()

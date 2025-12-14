@@ -7,17 +7,17 @@ def main():
     parser.add_argument(
         "--host",
         type=str,
-        default="127.0.0.1",
+        default="0.0.0.0",
         help="Host address to bind to."
     )
     parser.add_argument(
-        "--port",
+        "--port", "-p",
         type=int,
         default=8000,
         help="Port to bind to."
     )
     parser.add_argument(
-        "--reload",
+        "--reload", "-r",
         action="store_true", # 这是一个布尔标志
         help="Enable auto-reload for development."
     )
@@ -32,6 +32,10 @@ def main():
         ws_ping_interval=2,
         ws_ping_timeout=4,
     )
+
+    # release resources
+    from . import release
+    release()
 
 if __name__ == "__main__":
     main()
