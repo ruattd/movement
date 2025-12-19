@@ -22,14 +22,17 @@ def test(
         if width: cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         if height: cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         if fps: cap.set(cv2.CAP_PROP_FPS, fps)
-        return {
+        result = {
             "status": "success",
-            "actual": {
+            "arguments": {
                 "width": int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
                 "height": int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
                 "fps": int(cap.get(cv2.CAP_PROP_FPS)),
+                "pixfmt": cap.get(cv2.CAP_PROP_CODEC_PIXEL_FORMAT),
             },
         }
+        cap.release()
+        return result
     except Exception as e:
         return {
             "status": "failed",
